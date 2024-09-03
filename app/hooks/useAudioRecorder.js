@@ -43,9 +43,7 @@ export const useAudioRecorder = () => {
           alert("Se usará el formato predeterminado.");
         }
 
-        const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: "audio/wav",
-        });
+        const mediaRecorder = new MediaRecorder(stream, options);
         mediaRecorderRef.current = mediaRecorder;
 
         mediaRecorder.ondataavailable = (event) => {
