@@ -29,8 +29,6 @@ export const useAudioRecorder = () => {
           options = { mimeType: "audio/ogg" };
         } else if (MediaRecorder.isTypeSupported("audio/mp3")) {
           options = { mimeType: "audio/mp3" };
-        } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
-          options = { mimeType: "audio/mp4" };
         } else if (MediaRecorder.isTypeSupported("audio/mpeg")) {
           options = { mimeType: "audio/mpeg" };
         } else if (MediaRecorder.isTypeSupported("audio/mpga")) {
