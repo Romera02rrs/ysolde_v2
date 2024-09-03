@@ -7,6 +7,7 @@ const openai = new OpenAI({
 
 export async function POST(request) {
   try {
+    // Leer los datos del archivo del request
     const formData = await request.formData();
     const file = formData.get('file');
 
@@ -14,18 +15,11 @@ export async function POST(request) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
-    // Imprimir el tipo MIME del archivo recibido
-    console.error('Received file type:', file.type);
+    const fileEdited = new File([originalFile], originalFile.name, { type: 'mp4' });
 
-    const supportedFormats = ['audio/flac', 'audio/m4a', 'audio/mp3', 'audio/mp4', 'audio/mpeg', 'audio/mpga', 'audio/oga', 'audio/ogg', 'audio/wav', 'audio/webm'];
-
-    if (!supportedFormats.includes(file.type)) {
-      console.warn('Unsupported file format:', file.type);
-      return NextResponse.json({ error: `Unsupported file format: ${file.type}. Supported formats: ${supportedFormats.join(', ')}` }, { status: 400 });
-    }
-
+    // Enviar el archivo a OpenAI para la transcripción
     const transcription = await openai.audio.transcriptions.create({
-      file: file,
+      file: fileEdited,
       model: 'whisper-1'
     });
 
@@ -33,6 +27,7 @@ export async function POST(request) {
 
     return NextResponse.json({ transcription: transcription.text });
   } catch (error) {
+    console.log("FILE_FORMAT: ", file.type)
     console.error('Error in transcription:', error);
     return NextResponse.json({ error: 'Error in transcription' }, { status: 500 });
   }
