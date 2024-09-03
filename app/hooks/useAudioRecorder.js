@@ -26,7 +26,6 @@ export const useAudioRecorder = () => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
-  // Usar useEffect para asegurarse de que el código se ejecute solo en el cliente
   useEffect(() => {
     if (typeof navigator !== "undefined") {
       requestMicrophonePermission();
@@ -60,7 +59,8 @@ export const useAudioRecorder = () => {
           audioChunksRef.current.push(event.data);
         };
 
-        mediaRecorder.start();
+        // Aquí es donde se agrega la espera de un minuto antes de comenzar la grabación
+        mediaRecorder.start(1000 * 60);
         setRecording(true);
         console.log("Recording started");
       } catch (error) {

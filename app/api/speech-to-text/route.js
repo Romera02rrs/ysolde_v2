@@ -17,22 +17,10 @@ export async function POST(request) {
 
     console.log("File type: ", file.type);
 
-    let transcription = "";
-
-    if (file.type == "audio/mp4") {
-      const blob = await file.blob();
-      const newFile = new File([blob], "audio.mp4", { type: file.type });
-
-      transcription = await openai.audio.transcriptions.create({
-        file: newFile,
-        model: "whisper-1",
-      });
-    } else {
-      transcription = await openai.audio.transcriptions.create({
-        file: file,
-        model: "whisper-1",
-      });
-    }
+    const transcription = await openai.audio.transcriptions.create({
+      file: file,
+      model: "whisper-1",
+    });
 
     console.log("Transcription: ", transcription);
 
