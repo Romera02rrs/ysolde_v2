@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 async function requestMicrophonePermission() {
   try {
@@ -26,10 +26,15 @@ export const useAudioRecorder = () => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
-  requestMicrophonePermission();
+  // Usar useEffect para asegurarse de que el código se ejecute solo en el cliente
+  useEffect(() => {
+    if (typeof navigator !== "undefined") {
+      requestMicrophonePermission();
+    }
+  }, []);
 
   const handleAudio = async () => {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    if (typeof navigator === "undefined" || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       alert("Your browser does not support audio recording.");
       return;
     }
@@ -40,17 +45,14 @@ export const useAudioRecorder = () => {
         
         let options = {};
 
-        // Verificamos el soporte para diferentes tipos de MIME
         if (MediaRecorder.isTypeSupported('audio/webm')) {
           options = { mimeType: 'audio/webm' };
         } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
           options = { mimeType: 'audio/ogg' };
         } else {
           console.warn('Ningún tipo de MIME específico es compatible, se usará el formato predeterminado.');
-          // No especificar un MIME type para permitir que el navegador elija uno
         }
 
-        // Crear el MediaRecorder con el MIME type apropiado
         const mediaRecorder = new MediaRecorder(stream, options);
         mediaRecorderRef.current = mediaRecorder;
 
@@ -65,9 +67,7 @@ export const useAudioRecorder = () => {
         audioChunksRef.current = [];
         if (mediaRecorderRef.current) {
           mediaRecorderRef.current.stop();
-          mediaRecorderRef.current.stream
-            .getTracks()
-            .forEach((track) => track.stop());
+          mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
         }
         setRecording(false);
         console.error("Error during processing:", error);
@@ -76,13 +76,12 @@ export const useAudioRecorder = () => {
     } else {
       mediaRecorderRef.current.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, {
-          type: mediaRecorderRef.current.mimeType || "audio/webm", // Usar el MIME type que fue soportado
+          type: mediaRecorderRef.current.mimeType || "audio/webm",
         });
 
         const formData = new FormData();
         formData.append("file", audioBlob, "audio.webm");
 
-        // Transcribir audio a texto
         const transcription = await fetch("/api/speech-to-text", {
           method: "POST",
           body: formData,
@@ -90,7 +89,6 @@ export const useAudioRecorder = () => {
           .then((res) => res.json())
           .then((data) => data.transcription);
 
-        // Obtener respuesta del chat
         const chatResponse = await fetch("/api/chat", {
           method: "POST",
           body: JSON.stringify({ prompt: transcription }),
@@ -100,10 +98,8 @@ export const useAudioRecorder = () => {
 
         console.log("Chat: ", chatResponse);
 
-        // Obtener token JWT
         const token = localStorage.getItem("token");
 
-        // Guardar la conversación y obtener la URL de la respuesta de audio
         const saveConversationResponse = await fetch("api/saveConversation", {
           method: "POST",
           body: JSON.stringify({ text: chatResponse, token: token }),
@@ -111,19 +107,15 @@ export const useAudioRecorder = () => {
 
         const audioUrl = saveConversationResponse.audioUrl;
 
-        // Reproducir la respuesta de audio
         const audioIA = new Audio(audioUrl);
         audioIA.play();
 
-        // Limpiar para la próxima grabación
         audioChunksRef.current = [];
       };
 
       console.log("Stop recording");
       mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream
-        .getTracks()
-        .forEach((track) => track.stop());
+      mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
       setRecording(false);
     }
   };
