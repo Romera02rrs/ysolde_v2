@@ -22,13 +22,14 @@ export async function POST(request) {
       fileType = "mp4"; // Cambia el tipo MIME a 'video/mp4'
 
       // Reempaquetar el archivo como un Blob con el nuevo tipo MIME
-      const newFile = new Blob([file], { type: fileType });
+      const buffer = await file.arrayBuffer();
+      const blob = new Blob([buffer], { type: fileType });
 
-      console.log("New file type:", newFile.type);
+      console.log("New file type:", blob);
 
       // Enviar el archivo a OpenAI para la transcripción
       transcription = await openai.audio.transcriptions.create({
-        file: newFile,
+        file: blob,
         model: "whisper-1",
       });
     } else {
