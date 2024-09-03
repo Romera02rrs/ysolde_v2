@@ -18,7 +18,9 @@ export const useAudioRecorder = () => {
 
     try {
       if (!recording) {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
         await recorderRef.current.init(stream);
         await recorderRef.current.start();
         setIsRecording(true);
