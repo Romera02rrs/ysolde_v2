@@ -22,10 +22,12 @@ export async function POST(request) {
     });
 
     console.log(transcription);
+    console.warn('FILEFORMAT: ', file.type)
 
     return NextResponse.json({ transcription: transcription.text });
   } catch (error) {
     console.error('Error in transcription:', error);
+    console.error('FILEFORMAT: ', file.type)
     return NextResponse.json({ error: 'Error in transcription' }, { status: 500 });
   }
 }
