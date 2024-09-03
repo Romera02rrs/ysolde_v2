@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import mime from "mime-types"; // Paquete para manejar tipos MIME
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -15,21 +14,19 @@ export async function POST(request) {
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
+
     let transcription = "";
-    // Verificar el tipo MIME y cambiarlo si es necesario
     let fileType = file.type;
+
     if (fileType === "audio/mp4") {
-      fileType = "mp4"; // Cambia el tipo MIME a 'video/mp4'
-
-      // Reempaquetar el archivo como un Blob con el nuevo tipo MIME
       const buffer = await file.arrayBuffer();
-      const blob = new Blob([buffer], { type: fileType });
+      const newFile = new File([buffer], "audio.mp4", { type: "audio/mp4" });
 
-      console.log("New file type:", blob);
+      console.log("New file:", newFile);
 
       // Enviar el archivo a OpenAI para la transcripción
       transcription = await openai.audio.transcriptions.create({
-        file: blob,
+        file: newFile,
         model: "whisper-1",
       });
     } else {
