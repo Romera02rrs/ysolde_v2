@@ -6,41 +6,62 @@ export const useAudioRecorder = () => {
   const audioChunksRef = useRef([]);
 
   const handleAudio = async () => {
-    if (typeof navigator === "undefined" || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices ||
+      !navigator.mediaDevices.getUserMedia
+    ) {
       alert("Your browser does not support audio recording.");
       return;
     }
 
     if (!recording) {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+        });
+
         let options = {};
 
-        if (MediaRecorder.isTypeSupported('audio/webm')) {
-          options = { mimeType: 'audio/webm' };
-        } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
-          options = { mimeType: 'audio/ogg' };
+        if (MediaRecorder.isTypeSupported("audio/webm")) {
+          options = { mimeType: "audio/webm" };
+        } else if (MediaRecorder.isTypeSupported("audio/ogg")) {
+          options = { mimeType: "audio/ogg" };
+        } else if (MediaRecorder.isTypeSupported("audio/mp3")) {
+          options = { mimeType: "audio/mp3" };
+        } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+          options = { mimeType: "audio/mp4" };
+        } else if (MediaRecorder.isTypeSupported("audio/mpeg")) {
+          options = { mimeType: "audio/mpeg" };
+        } else if (MediaRecorder.isTypeSupported("audio/mpga")) {
+          options = { mimeType: "audio/mpga" };
+        } else if (MediaRecorder.isTypeSupported("audio/m4a")) {
+          options = { mimeType: "audio/m4a" };
+        } else if (MediaRecorder.isTypeSupported("audio/wav")) {
+          options = { mimeType: "audio/wav" };
         } else {
-          alert('Ningún tipo de MIME específico es compatible, se usará el formato predeterminado.')
-          console.warn('Ningún tipo de MIME específico es compatible, se usará el formato predeterminado.');
+          alert("Se usará el formato predeterminado.");
         }
 
-        const mediaRecorder = new MediaRecorder(stream, options);
+        const mediaRecorder = new MediaRecorder(stream, {
+          mimeType: "audio/wav",
+        });
         mediaRecorderRef.current = mediaRecorder;
 
         mediaRecorder.ondataavailable = (event) => {
           audioChunksRef.current.push(event.data);
         };
 
-        mediaRecorder.start(1000);
+        mediaRecorderRef.current.start(1000);
         setRecording(true);
         console.log("Recording started");
       } catch (error) {
         audioChunksRef.current = [];
         if (mediaRecorderRef.current) {
           mediaRecorderRef.current.stop();
-          mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+          mediaRecorderRef.current.stream
+            .getTracks()
+            .forEach((track) => track.stop());
         }
         setRecording(false);
         console.error("Error during processing:", error);
@@ -88,7 +109,9 @@ export const useAudioRecorder = () => {
 
       console.log("Stop recording");
       mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach((track) => track.stop());
+      mediaRecorderRef.current.stream
+        .getTracks()
+        .forEach((track) => track.stop());
       setRecording(false);
     }
   };
