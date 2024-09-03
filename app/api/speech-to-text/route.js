@@ -17,13 +17,21 @@ export async function POST(request) {
 
     console.log('File type: ', file.type)
 
-    // Enviar el archivo a OpenAI para la transcripción
-    const transcription = await openai.audio.transcriptions.create({
-      file: file,
-      model: 'whisper-1'
-    });
+    let transcription = ""
 
-    console.log(transcription);
+    if (file.type == "audio/mp4"){
+      transcription = await openai.audio.transcriptions.create({
+        file: new Blob([file], { type: 'audio/m4a' }),
+        model: 'whisper-1'
+      });
+    }else{
+      transcription = await openai.audio.transcriptions.create({
+        file: file,
+        model: 'whisper-1'
+      });
+    }
+
+    console.log('Transcription: ', transcription);
 
     return NextResponse.json({ transcription: transcription.text });
   } catch (error) {
