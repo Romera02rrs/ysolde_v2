@@ -20,8 +20,8 @@ export async function POST(request) {
     let transcription = ""
 
     if (file.type == "audio/mp4"){
-      const blob = new Blob([file], { type: 'audio/m4a' });
-      const newFile = new File([blob], 'audio.m4a', { type: 'audio/m4a' });
+      const blob = new Blob([file], { type: 'mp4' });
+      const newFile = new File([blob], 'audio.mp4', { type: 'mp4' });
       transcription = await openai.audio.transcriptions.create({
         file: newFile,
         model: 'whisper-1'
