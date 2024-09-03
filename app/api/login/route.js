@@ -1,5 +1,5 @@
 // api/register.js
-import connectToDatabase from '@/lib/mongoose';
+import connectToDatabase from '@/app/lib/mongoose';
 import User from '@/models/User';
 import bcrypt from "bcrypt";
 import jwt from 'jsonwebtoken';
