@@ -1,36 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 
-async function requestMicrophonePermission() {
-  try {
-    const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
-
-    if (permissionStatus.state === 'granted') {
-      console.log('Permiso para usar el micrófono ya concedido');
-    } else if (permissionStatus.state === 'prompt') {
-      console.log('Se solicitará permiso para usar el micrófono');
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-    } else {
-      console.log('Permiso para usar el micrófono denegado');
-    }
-
-    permissionStatus.onchange = () => {
-      console.log('El estado del permiso ha cambiado:', permissionStatus.state);
-    };
-  } catch (error) {
-    console.error('Error al solicitar el permiso para el micrófono:', error);
-  }
-}
-
 export const useAudioRecorder = () => {
   const [recording, setRecording] = useState(false);
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
-
-  useEffect(() => {
-    if (typeof navigator !== "undefined") {
-      requestMicrophonePermission();
-    }
-  }, []);
 
   const handleAudio = async () => {
     if (typeof navigator === "undefined" || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -49,6 +22,7 @@ export const useAudioRecorder = () => {
         } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
           options = { mimeType: 'audio/ogg' };
         } else {
+          alert('Ningún tipo de MIME específico es compatible, se usará el formato predeterminado.')
           console.warn('Ningún tipo de MIME específico es compatible, se usará el formato predeterminado.');
         }
 
