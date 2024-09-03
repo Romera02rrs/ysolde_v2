@@ -2,22 +2,22 @@ import { useState, useRef } from "react";
 
 async function requestMicrophonePermission() {
   try {
-      const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
+    const permissionStatus = await navigator.permissions.query({ name: 'microphone' });
 
-      if (permissionStatus.state === 'granted') {
-          console.log('Permiso para usar el micrófono ya concedido');
-      } else if (permissionStatus.state === 'prompt') {
-          console.log('Se solicitará permiso para usar el micrófono');
-          await navigator.mediaDevices.getUserMedia({ audio: true });
-      } else {
-          console.log('Permiso para usar el micrófono denegado');
-      }
+    if (permissionStatus.state === 'granted') {
+      console.log('Permiso para usar el micrófono ya concedido');
+    } else if (permissionStatus.state === 'prompt') {
+      console.log('Se solicitará permiso para usar el micrófono');
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+    } else {
+      console.log('Permiso para usar el micrófono denegado');
+    }
 
-      permissionStatus.onchange = () => {
-          console.log('El estado del permiso ha cambiado:', permissionStatus.state);
-      };
+    permissionStatus.onchange = () => {
+      console.log('El estado del permiso ha cambiado:', permissionStatus.state);
+    };
   } catch (error) {
-      console.error('Error al solicitar el permiso para el micrófono:', error);
+    console.error('Error al solicitar el permiso para el micrófono:', error);
   }
 }
 
@@ -26,7 +26,7 @@ export const useAudioRecorder = () => {
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
 
-  requestMicrophonePermission()
+  requestMicrophonePermission();
 
   const handleAudio = async () => {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
@@ -36,15 +36,22 @@ export const useAudioRecorder = () => {
 
     if (!recording) {
       try {
-        // Solicitar permiso para usar el micrófono
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        
+        let options = {};
 
-        // Solo si se obtiene el permiso, inicia la grabación
-        const mediaRecorder = new MediaRecorder(stream, {
-          mimeType: "audio/webm",
-        });
+        // Verificamos el soporte para diferentes tipos de MIME
+        if (MediaRecorder.isTypeSupported('audio/webm')) {
+          options = { mimeType: 'audio/webm' };
+        } else if (MediaRecorder.isTypeSupported('audio/ogg')) {
+          options = { mimeType: 'audio/ogg' };
+        } else {
+          console.warn('Ningún tipo de MIME específico es compatible, se usará el formato predeterminado.');
+          // No especificar un MIME type para permitir que el navegador elija uno
+        }
+
+        // Crear el MediaRecorder con el MIME type apropiado
+        const mediaRecorder = new MediaRecorder(stream, options);
         mediaRecorderRef.current = mediaRecorder;
 
         mediaRecorder.ondataavailable = (event) => {
@@ -53,7 +60,7 @@ export const useAudioRecorder = () => {
 
         mediaRecorder.start();
         setRecording(true);
-        console.log("Recording");
+        console.log("Recording started");
       } catch (error) {
         audioChunksRef.current = [];
         if (mediaRecorderRef.current) {
@@ -69,13 +76,13 @@ export const useAudioRecorder = () => {
     } else {
       mediaRecorderRef.current.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, {
-          type: "audio/webm",
+          type: mediaRecorderRef.current.mimeType || "audio/webm", // Usar el MIME type que fue soportado
         });
 
         const formData = new FormData();
         formData.append("file", audioBlob, "audio.webm");
 
-        // Transcribe audio to text
+        // Transcribir audio a texto
         const transcription = await fetch("/api/speech-to-text", {
           method: "POST",
           body: formData,
@@ -83,7 +90,7 @@ export const useAudioRecorder = () => {
           .then((res) => res.json())
           .then((data) => data.transcription);
 
-        // Get the response from the chat
+        // Obtener respuesta del chat
         const chatResponse = await fetch("/api/chat", {
           method: "POST",
           body: JSON.stringify({ prompt: transcription }),
@@ -93,10 +100,10 @@ export const useAudioRecorder = () => {
 
         console.log("Chat: ", chatResponse);
 
-        // Get JWT token
+        // Obtener token JWT
         const token = localStorage.getItem("token");
 
-        // Save conversation and get the audio response URL
+        // Guardar la conversación y obtener la URL de la respuesta de audio
         const saveConversationResponse = await fetch("api/saveConversation", {
           method: "POST",
           body: JSON.stringify({ text: chatResponse, token: token }),
@@ -104,11 +111,11 @@ export const useAudioRecorder = () => {
 
         const audioUrl = saveConversationResponse.audioUrl;
 
-        // Play the audio response
+        // Reproducir la respuesta de audio
         const audioIA = new Audio(audioUrl);
         audioIA.play();
 
-        // Clean up for the next recording
+        // Limpiar para la próxima grabación
         audioChunksRef.current = [];
       };
 
