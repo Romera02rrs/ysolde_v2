@@ -32,7 +32,7 @@ export function HomePage() {
     document.documentElement.classList.toggle("dark");
   };
 
-  const { recording, handleAudio } = useAudioRecorder();
+  const { recording, toggleRecording } = useAudioRecorder();
 
   const handleSend = () => {
   };
@@ -52,7 +52,7 @@ export function HomePage() {
           className={`rounded-full p-8 ${
             recording ? "bg-red-500 hover:bg-red-500 text-white hover:text-white" : ""
           }`}
-          onClick={handleAudio}
+          onClick={toggleRecording}
         >
           <Mic className="h-12 w-12" />
           <span className="sr-only">Activate voice assistant</span>
@@ -150,7 +150,7 @@ export function HomePage() {
               <Button onClick={handleSend}>
                 <Send className="h-4 w-4" />
               </Button>
-              <Button variant="outline" onClick={handleAudio}>
+              <Button variant="outline" onClick={toggleRecording}>
                 <Mic className="h-4 w-4" />
               </Button>
             </div>
