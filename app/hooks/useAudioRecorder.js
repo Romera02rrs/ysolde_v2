@@ -59,8 +59,7 @@ export const useAudioRecorder = () => {
           audioChunksRef.current.push(event.data);
         };
 
-        // Aquí es donde se agrega la espera de un minuto antes de comenzar la grabación
-        mediaRecorder.current.start(1000);
+        mediaRecorder.start(1000);
         setRecording(true);
         console.log("Recording started");
       } catch (error) {
