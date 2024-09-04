@@ -4,19 +4,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Mic,
-  MessageSquare,
-  Send,
-} from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Mic, MessageSquare, Send, Loader } from "lucide-react";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { NavBar } from "@/components/nav-bar";
-import { useAudioRecorder } from '@/app/hooks/useAudioRecorder';
-
+import { useAudioRecorder } from "@/app/hooks/useAudioRecorder";
 
 export function HomePage() {
   const [darkMode, setDarkMode] = useState(false);
@@ -32,10 +23,9 @@ export function HomePage() {
     document.documentElement.classList.toggle("dark");
   };
 
-  const { recording, toggleRecording } = useAudioRecorder();
+  const { recording, toggleRecording, processingAudio } = useAudioRecorder();
 
-  const handleSend = () => {
-  };
+  const handleSend = () => {};
 
   const InitialScreen = () => (
     <>
@@ -50,11 +40,13 @@ export function HomePage() {
           variant="outline"
           size="lg"
           className={`rounded-full p-8 ${
-            recording ? "bg-red-500 hover:bg-red-500 text-white hover:text-white" : ""
+            recording
+              ? "bg-red-500 hover:bg-red-500 text-white hover:text-white"
+              : ""
           }`}
           onClick={toggleRecording}
         >
-          <Mic className="h-12 w-12" />
+          {processingAudio ? <Loader className="h-12 w-12" /> : <Mic className="h-12 w-12" />}
           <span className="sr-only">Activate voice assistant</span>
         </Button>
         <Button size="lg" onClick={() => setShowChat(true)}>
@@ -145,7 +137,7 @@ export function HomePage() {
                 placeholder="Type your message..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyUp ={(e) => e.key === "Enter" && handleSend()}
+                onKeyUp={(e) => e.key === "Enter" && handleSend()}
               />
               <Button onClick={handleSend}>
                 <Send className="h-4 w-4" />
@@ -161,9 +153,12 @@ export function HomePage() {
   );
 
   return (
-    <div className={`flex flex-col h-screen md:max-h-screen max-h-[calc(100vh-7rem)] overflow-hidden ${darkMode ? "dark" : ""}`}>
+    <div
+      className={`flex flex-col h-screen md:max-h-screen max-h-[calc(100vh-7rem)] overflow-hidden ${
+        darkMode ? "dark" : ""
+      }`}
+    >
       {showChat ? <ChatInterface /> : <InitialScreen />}
     </div>
   );
-  
 }
